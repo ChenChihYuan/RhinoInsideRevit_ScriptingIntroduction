@@ -134,11 +134,88 @@ Apparently, we can link components using nodeInCode.
 Here is the example.
 
 More about NodeInCode:
+https://developer.rhino3d.com/api/RhinoCommon/html/N_Rhino_NodeInCode.htm
 https://chenchihyuan.github.io/2020/05/03/NodeInCode/
 https://discourse.mcneel.com/t/rhino-nodeincode-namespace/38622
 
+Notice that in the example provide in the official documentation
+They used `ComponentFunctionInfo.Invoke()`, but as I tried the method in the demo example was outdated, and I also couldn't make it work.
+So, I choose to use `ComponentFucntionInfo.Evaluate()`
+
+Check both definiations in the RhinoCommon SDk:
+https://developer.rhino3d.com/api/RhinoCommon/html/M_Rhino_NodeInCode_ComponentFunctionInfo_Evaluate.htm
+https://developer.rhino3d.com/api/RhinoCommon/html/M_Rhino_NodeInCode_ComponentFunctionInfo_Invoke.htm
+
+
+- ComponentFunctionInfo.Evaluate()
+- ComponentFunctionInfo.Invoke()
+
+
+```cs
+private void RunScript(Brep BREP, ref object DS)
+  {
+
+
+    // AddMaterial component to create a material
+    var queryMaterials = Components.FindComponent("RhinoInside_QueryMaterials");
+    // and AddGeometryDirectShape to create a DirectShape element in Revit
+    var addGeomDirectshape = Components.FindComponent("RhinoInside_AddGeometryDirectShape");
+
+    if (queryMaterials == null || addGeomDirectshape == null) {
+      throw new Exception("One or more of the necessary components are not available as node-in-code");
+    }
+
+
+    if(BREP != null) {
+      string[] warns;
+
+      object[] newMaterials = queryMaterials.Evaluate(
+        new object[]{
+        "",
+        "Glass",
+        null},
+        false,
+        out warns);
+
+
+
+      string[] warnings;
+
+      object[] dsElements = addGeomDirectshape.Evaluate(
+        new object[]{
+        "Custom DS",
+        GetCategory("Walls"),
+        BREP,
+        newMaterials[0]
+        },
+        false,
+        out warnings
+        );
+
+
+      // assign the new DirectShape element to output
+      DS = dsElements[0];
+    }
+
+  }
+
+  // <Custom additional code> 
+  public DB.Category GetCategory(string categoryName){
+    var doc = RIR.Revit.ActiveDBDocument;
+    foreach(DB.Category cat in doc.Settings.Categories) {
+      if (cat.Name == categoryName)
+        return cat;
+    }
+    return null;
+  }
+```
+
+
+In this example, in order to show the change the preview in Revit to `realistic`.
 
 # Exercise 2 - make Revit Rebar in Grasshopper
+
+- use `as` to casting object into `Revit` elements
 
 ```cs
 private void RunScript(object HostElement, bool Trigger, List<Curve> crvs, Vector3d norm, object BarDiameter, ref object rebar_result)
