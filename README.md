@@ -217,6 +217,9 @@ In this example, in order to show the change the preview in Revit to `realistic`
 
 - use `as` to casting object into `Revit` elements
 
+Reference:
+https://www.revitapidocs.com/2016/b020c9d5-6026-b9fa-7e23-f6a7ec2cede3.htm
+
 ```cs
 private void RunScript(object HostElement, bool Trigger, List<Curve> crvs, Vector3d norm, object BarDiameter, ref object rebar_result)
   {
